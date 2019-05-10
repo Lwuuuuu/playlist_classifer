@@ -6,7 +6,7 @@ import fetch_songs
 def create_playlist(sp, user_id):
     #user_id = sp.current_user()['id']
     print(user_id)
-    result = sp.user_playlist_create(user = user_id, name = "WORKS", public = False)
+    result = sp.user_playlist_create(user = user_id, name = "STUDYING", public = False)
 def add_tracks(sp, user, master_list):
     #sp.user_playlist_add_tracks(master_list)
     master_list = list(master_list)
@@ -21,5 +21,6 @@ def run():
     client_secret='98fe97db700b44f4ad0743b945e3084b',redirect_uri='http://localhost:8888/callback/')
     if token:
         sp = spotipy.Spotify(auth=token)
-        master_list, user_list = run()
-        
+        #master_list, user_list = run()
+        create_playlist(sp, user) 
+run()

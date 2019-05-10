@@ -88,14 +88,14 @@ def run():
                 master_list.add(track_id)
                 #print(track_id)
                 i += 1
-        print("I", i)
+        #print("I", i)
         #Gets the track IDs for all songs the user has saved
         user_tracks_id = get_user_songs(sp)
         for track in user_tracks_id:
             user_list.add(track)
             #print(track)
+        print("why")
         return master_list, user_list
     else:
         print("Can't get token for", username)
         return 0
-run()
