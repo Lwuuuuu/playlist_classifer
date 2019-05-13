@@ -22,5 +22,5 @@ def run():
     if token:
         sp = spotipy.Spotify(auth=token)
         #master_list, user_list = run()
-        create_playlist(sp, user) 
+        create_playlist(sp, user)
 run()
