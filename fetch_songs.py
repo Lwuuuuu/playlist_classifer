@@ -11,7 +11,7 @@ Spotify_Locked_In = "https://open.spotify.com/playlist/37i9dQZF1DWTl4y3vgJOXW"
 Spotify_Hype = "https://open.spotify.com/playlist/37i9dQZF1DX4eRPd9frC1m"
 Spotify_Raising_Bar = "https://open.spotify.com/playlist/37i9dQZF1DXdURFimg6Blm"
 Spotify_Workout_Beats = "https://open.spotify.com/playlist/37i9dQZF1DWUSyphfcc6aL"
-Training_Playlist = [Spotify_Beast_Mode, Spotify_Motivation_Mix, Spotify_Power_Workout, Spotify_Classic_Workout, Spotify_Locked_In, Spotify_Hype, Spotify_Raising_Bar,
+Training_Workout_Playlist = [Spotify_Beast_Mode, Spotify_Motivation_Mix, Spotify_Power_Workout, Spotify_Classic_Workout, Spotify_Locked_In, Spotify_Hype, Spotify_Raising_Bar,
 Spotify_Workout_Beats]
 
 
@@ -21,9 +21,13 @@ Spotify_Workout_Beats]
 
 
 
-
-
-
+S1 = "https://open.spotify.com/playlist/19uVLpMdgv0Dy3LvpYx4LA"
+S2 = "https://open.spotify.com/playlist/37i9dQZF1DX8NTLI2TtZa6"
+S3 = "https://open.spotify.com/playlist/0PRs1Xaui4zCv9LdIIt20X"
+S4 = "https://open.spotify.com/playlist/37i9dQZF1DX1dvMSwf27JO"
+S5 = "https://open.spotify.com/playlist/37i9dQZF1DWSSrwtip3vZP"
+S6 = "https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ"
+Training_Study_Playlist = [S1, S2, S3, S4, S5, S6]
 
 
 #Upbeat/Fun
@@ -36,15 +40,15 @@ def get_token(user, scope):
     return token
 
 
-def training_songs(sp, playlist_info):
+def training_songs(sp, Training_Playlist):
     training_songs_id = set()
-    #Gets the Spotify playlist object
-    #user = playlist_info[0]
-    results = sp.user_playlist('', playlist_id = playlist_info)
-    tracks = results['tracks']['items']
-    for track_id in tracks:
-        #Adds the tracks ID to the set
-        training_songs_id.add(track_id['track']['id'])
+    #For all spotify playlist that is listed
+    for playlist_info in Training_Playlist:
+        results = sp.user_playlist('', playlist_id = playlist_info)
+        tracks = results['tracks']['items']
+        for track_id in tracks:
+            #Adds the tracks ID to the set
+            training_songs_id.add(track_id['track']['id'])
     return training_songs_id
 def get_user_songs(sp):
     user_songs_id = set()

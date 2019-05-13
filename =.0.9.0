@@ -1,0 +1,22 @@
+Collecting tensorflow
+  Using cached https://files.pythonhosted.org/packages/d4/29/6b4f1e02417c3a1ccc85380f093556ffd0b35dc354078074c5195c8447f2/tensorflow-1.13.1-cp37-cp37m-manylinux1_x86_64.whl
+Requirement already satisfied: six>=1.10.0 in /usr/lib/python3/dist-packages (from tensorflow) (1.12.0)
+Requirement already satisfied: keras-applications>=1.0.6 in /usr/local/lib/python3.7/dist-packages (from tensorflow) (1.0.7)
+Requirement already satisfied: numpy>=1.13.3 in /usr/lib/python3/dist-packages (from tensorflow) (1.15.4)
+Requirement already satisfied: tensorflow-estimator<1.14.0rc0,>=1.13.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow) (1.13.0)
+Requirement already satisfied: protobuf>=3.6.1 in /usr/local/lib/python3.7/dist-packages (from tensorflow) (3.7.1)
+Requirement already satisfied: grpcio>=1.8.6 in /usr/local/lib/python3.7/dist-packages (from tensorflow) (1.20.1)
+Requirement already satisfied: tensorboard<1.14.0,>=1.13.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow) (1.13.1)
+Requirement already satisfied: wheel>=0.26 in /usr/lib/python3/dist-packages (from tensorflow) (0.30.0)
+Requirement already satisfied: termcolor>=1.1.0 in /usr/lib/python3/dist-packages (from tensorflow) (1.1.0)
+Requirement already satisfied: keras-preprocessing>=1.0.5 in /usr/local/lib/python3.7/dist-packages (from tensorflow) (1.0.9)
+Requirement already satisfied: absl-py>=0.1.6 in /usr/local/lib/python3.7/dist-packages (from tensorflow) (0.7.1)
+Requirement already satisfied: astor>=0.6.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow) (0.7.1)
+Requirement already satisfied: gast>=0.2.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow) (0.2.2)
+Requirement already satisfied: h5py in /usr/local/lib/python3.7/dist-packages (from keras-applications>=1.0.6->tensorflow) (2.9.0)
+Requirement already satisfied: mock>=2.0.0 in /usr/local/lib/python3.7/dist-packages (from tensorflow-estimator<1.14.0rc0,>=1.13.0->tensorflow) (3.0.5)
+Requirement already satisfied: setuptools in /usr/lib/python3/dist-packages (from protobuf>=3.6.1->tensorflow) (40.6.3)
+Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.7/dist-packages (from tensorboard<1.14.0,>=1.13.0->tensorflow) (0.15.2)
+Requirement already satisfied: markdown>=2.6.8 in /usr/lib/python3/dist-packages (from tensorboard<1.14.0,>=1.13.0->tensorflow) (3.0.1)
+Installing collected packages: tensorflow
+Successfully installed tensorflow-1.13.1
