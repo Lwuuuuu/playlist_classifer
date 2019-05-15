@@ -24,21 +24,19 @@ def training_songs(sp, Training_Playlist):
                 #Adds the tracks ID to the set
                 training_songs_id.add(track_id['track']['id'])
     return training_songs_id
-def write_user(user_songs_id):
-    with open('user.csv', 'a') as writeFile:
-        writer = csv.writer(writeFile)
-        for track in user_songs_id:
-            writer.writerow(track)
 def get_user_songs():
     try:
+        #If CSV file with user information exist
         with open('user.csv', 'r') as readFile:
+            #List containing all the track IDs of a user
             user_songs_id = []
             reader = csv.reader(readFile)
             csv_file = list(reader)
             for track_id in csv_file:
                 user_songs_id.append(track_id)
     except:
-        print("Entered the exception part where user data written to CSV.")
+        #If no user CSV File exist
+        print("Loading in user's tracks into CSV File")
         token = get_token(user = "cv2f8pc6v4yqhx9qsgiiynji5", scope = 'user-library-read')
         sp = spotipy.Spotify(auth = token)
         user_songs_id = set()
@@ -57,5 +55,10 @@ def get_user_songs():
                 #adds the track ID to the list
                 user_songs_id.add(track['track']['id'])
                 #print(track['track']['name'])
-        write_user(user_songs_id)
+        with open('user.csv', 'a') as writeFile:
+            #Write IDs into user.csv
+            writer = csv.writer(writeFile)
+            for track in user_songs_id:
+                writer.writerow(track)
+
     return user_songs_id

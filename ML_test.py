@@ -6,8 +6,8 @@ token = util.prompt_for_user_token(username = '', scope = 'user-library-read', c
 sp = spotipy.Spotify(auth = token)
 index = 0
 while 1:
-    playlist = 'https://open.spotify.com/playlist/1SEuTassX0KSIl0fNX5oKz'
-    #playlist = 'https://open.spotify.com/playlist/70Oa0hvBiMFwZDGC0UkS5s'
+    #playlist = 'https://open.spotify.com/playlist/1SEuTassX0KSIl0fNX5oKz'
+    playlist = 'https://open.spotify.com/playlist/70Oa0hvBiMFwZDGC0UkS5s'
     results = sp.user_playlist_tracks('', playlist_id = playlist, limit = 100, offset = index)
     tracks = results['items']
     length = len(tracks)
