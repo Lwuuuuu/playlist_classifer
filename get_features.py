@@ -90,7 +90,7 @@ def generate_audio_features(split_choice = 0, test_size = .1):
     except:
         #If no audio features have been loaded into the CSV file
         print("No CSV Found, Creating features.CSV...")
-        token = fs.get_token(user = "cv2f8pc6v4yqhx9qsgiiynji5", scope = 'user-library-read')
+        token = fs.get_token(user = "", scope = 'user-library-read')
         if token:
             sp = spotipy.Spotify(auth = token)
             #All_Playlist is a list that contains all URLs to training songs, order is Workout, Study or Happy, Sad
@@ -110,7 +110,7 @@ def generate_audio_features(split_choice = 0, test_size = .1):
                     intersections = list(set(All_Tracks[i]) & set(All_Tracks[j]))
                     for dupes in intersections:
                         #Remove all duplicates found
-                        print("Found duplicate ID {0} in playlist {1} and playlist {2}".format(dupes, i, j))
+                        #print("Found duplicate ID {0} in playlist {1} and playlist {2}".format(dupes, i, j))
                         All_Tracks[i].remove(dupes)
                         All_Tracks[j].remove(dupes)
             mood_no = 0

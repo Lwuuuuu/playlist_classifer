@@ -3,6 +3,7 @@ import spotipy
 import spotipy.util as util
 import csv
 def get_token(user, scope):
+    #token = util.prompt_for_user_token(user, scope)
     token = util.prompt_for_user_token(username = user, scope = scope, client_id='1da08e2fb3994edebbf758e0fa0ab23b',     client_secret='98fe97db700b44f4ad0743b945e3084b',redirect_uri='http://localhost:8888/callback/')
     return token
 
@@ -24,7 +25,7 @@ def training_songs(sp, Training_Playlist):
                 #Adds the tracks ID to the set
                 training_songs_id.add(track_id['track']['id'])
     return training_songs_id
-def get_user_songs():
+def get_user_songs(username):
     try:
         #If CSV file with user information exist
         with open('user.csv', 'r') as readFile:
@@ -37,7 +38,7 @@ def get_user_songs():
     except:
         #If no user CSV File exist
         print("Loading in user's tracks into CSV File")
-        token = get_token(user = "cv2f8pc6v4yqhx9qsgiiynji5", scope = 'user-library-read')
+        token = get_token(user = username, scope = 'user-library-read')
         sp = spotipy.Spotify(auth = token)
         user_songs_id = set()
         index = 0
