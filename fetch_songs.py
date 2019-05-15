@@ -13,7 +13,8 @@ def training_songs(sp, Training_Playlist):
     for playlist_info in Training_Playlist:
         index = 0
         while 1:
-            results = sp.user_playlist_tracks('', playlist_id = playlist_info, limit = 100, offset = index)
+            #Strip because need to get rid of the whitespaces in the playlist_info string
+            results = sp.user_playlist_tracks('', playlist_id = playlist_info.strip(), limit = 100, offset = index)
             tracks = results['items']
             length = len(tracks)
             if length == 0:
@@ -58,4 +59,3 @@ def get_user_songs():
                 #print(track['track']['name'])
         write_user(user_songs_id)
     return user_songs_id
-
