@@ -47,6 +47,7 @@ def predict(username, choice = 0):
     #Load in the training data
     X, Y = generate_audio_features(split_choice = choice)
     #Train Model
+    print("Training the Model.")
     clf.fit(X, Y)
     type1 = type2 = 0
     if choice == 0:
@@ -89,5 +90,5 @@ def predict(username, choice = 0):
     return mood_dict
 if __name__ == '__main__':
     split = int(input("0 for Work&Study, 1 for Happy&Sad: "))
-    #predict(split)
-    accuracy(choice = split, username = 'cv2f8pc6v4yqhx9qsgiiynji5')
+    predict('',split)
+    #accuracy(choice = split, username = 'cv2f8pc6v4yqhx9qsgiiynji5')
