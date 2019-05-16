@@ -8,7 +8,7 @@ import svm_classifer as sc
 
 def generate_playlist():
     #user = input("Enter your username: ")
-    #user = "cv2f8pc6v4yqhx9qsgiiynji5"
+    user = "cv2f8pc6v4yqhx9qsgiiynji5"
     token = fs.get_token(user, scope = 'playlist-modify-private user-library-read')
     if token:
         sp = spotipy.Spotify(auth = token)

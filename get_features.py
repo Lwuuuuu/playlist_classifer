@@ -64,7 +64,7 @@ def retrieve_Playlist(split_choice = 0):
             All_Playlist.append(temp)
      return All_Playlist
 
-def generate_audio_features(split_choice = 0, test_size = .1):
+def generate_audio_features(username, split_choice = 0, test_size = .1):
     try:
         #If the audio features are already loaded into the CSV file
         if split_choice == 0: f = 'features_work_study.csv'
@@ -122,7 +122,7 @@ def generate_audio_features(split_choice = 0, test_size = .1):
             writer = csv.writer(f)
             for mood_playlist in All_Tracks:
                 for id_no in mood_playlist:
-                    #Classifcation is Workout = 0, Study = 1, Happy = 2, Sad = 3
+                    #Classifcation is Workout = 0, Study = 1 and  Happy = 0, Sad = 1
                     mood_classifcation = mood_no
                     #Create object that holds all audio features
                     ft = features(sp, id_no, mood_classifcation)

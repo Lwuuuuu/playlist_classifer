@@ -7,6 +7,8 @@ import fetch_songs as fs
 import csv
 import spotipy
 import spotipy.util as util
+import pickle
+import os
 def accuracy(username, choice = 0):
     #Generate the training and testing data
     X, Y = generate_audio_features(username, split_choice = choice)
@@ -28,8 +30,9 @@ def predict(username, choice = 0):
     prediction_list = []
     #ID List is the list of the IDs of the user's tracks
     id_list = []
-    token = fs.get_token(user = username, scope = 'playlist-modify-private user-library-read')
+    token = fs.get_token(user = username, scope = 'user-library-modify playlist-modify-private user-library-read')
     sp = spotipy.Spotify(auth = token)
+    print("Generating User's tracks audio features...")
     for track in user_list:
         #In the CSV file, the track ID is stored as a list where each element is an indivdiual char.
         result = str("".join(track))
@@ -42,13 +45,24 @@ def predict(username, choice = 0):
         #Exclude the following audio_features; Key, Mode and Time_Signature
         ft = ft[0:2] + ft[3:4] + ft[5:10]
         prediction_list.append(list(ft))
-    #Creating SVM object
-    clf = svm.SVC(kernel = 'linear', gamma = .001, decision_function_shape = 'ovr', C = 10)
-    #Load in the training data
-    X, Y = generate_audio_features(split_choice = choice)
-    #Train Model
-    print("Training the Model.")
-    clf.fit(X, Y)
+    #Load pre-trained model if avaliable
+    if os.path.exists('model.sav') and choice == 0:
+        print("Loading into Pre-Trained Model..")
+        clf = pickle.load(open('model.sav', 'rb'))
+    elif os.path.exists('modelHS.sav') and choice == 1:
+        print("Loading into Pre-Trained Model..")
+        clf = pickle.load(open('modelHS.sav', 'rb'))
+    else:
+        #Creating SVM object
+        clf = svm.SVC(kernel = 'linear', gamma = .001, decision_function_shape = 'ovr', C = 10)
+        #Load in the training data
+        X, Y = generate_audio_features(username, split_choice = choice)
+        #Train Model
+        print("Training the Model.")
+        clf.fit(X, Y)
+        #Saving the model
+        print("Writing Model to file...")
+        pickle.dump(clf, open('model.sav', 'wb')) if choice == 0 else pickle.dump(clf,open('modelHS.sav', 'wb'))
     type1 = type2 = 0
     if choice == 0:
         mood_dict = {'Generated-Workout' : [],
@@ -89,6 +103,15 @@ def predict(username, choice = 0):
     print("Type1 - {0},  Type2 - {1}".format(type1, type2))
     return mood_dict
 if __name__ == '__main__':
+    username = 'cv2f8pc6v4yqhx9qsgiiynji5'
     split = int(input("0 for Work&Study, 1 for Happy&Sad: "))
-    predict('',split)
+    happy_sad_dict = predict('cv2f8pc6v4yqhx9qsgiiynji5',split)
+    sad_list = happy_sad_dict['Generated-Sad']
+    Add = input("Type 1 if you want to add these songs to your song library: ")
+    if Add == '1':
+        token = fs.get_token(user = username, scope = 'user-library-modify playlist-modify-private user-library-read')
+        sp = spotipy.Spotify(auth = token)
+        sp.current_user_saved_tracks_add(sad_list)
+        print("Tracks have been succesfully added to your song library.")
+    os.remove('user.csv')
     #accuracy(choice = split, username = 'cv2f8pc6v4yqhx9qsgiiynji5')
