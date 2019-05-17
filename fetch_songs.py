@@ -50,8 +50,7 @@ def get_user_songs(username):
             if length == 0: break
             #Increase offset for next iteration
             index += length
-            for track in user_songs:
-                #adds the track ID to the list
+            #adds the track ID to the list
             [user_songs_id.add(track['track']['id']) for track in user_songs]
         with open(PATH, 'w') as writeFile:
             #Write IDs into user.csv

@@ -87,10 +87,14 @@ def classify_Playlist(URL, username, choice = 0):
             if decision == '0': track_list = mood_dict[moods[0]]
             if decision == '1': track_list = mood_dict[moods[1]]
             if decision == '2': track_list = mood_dict[moods[0]] + mood_dict[moods[1]]
+            else: return 0
             #Do not add a song to song library is that song is already there
-            current_songs = get_user_songs(username)
+            current_songs = fs.get_user_songs(username)
             for track in track_list:
-                if track in current_songs: track_list.remove(track)
+                if track in current_songs:
+                    track_name = sp.track(track)['name']
+                    print(track_name, "already found in song library.")
+                    track_list.remove(track)
             add_tracks(sp, track_list)
             print("Tracks have been succesfully added to your song library")
         os.remove(PATH)
