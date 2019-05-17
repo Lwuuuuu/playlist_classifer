@@ -2,7 +2,9 @@ import sys
 import spotipy
 import spotipy.util as util
 import csv
+import os
 GLOBAL_SCOPE = 'user-library-modify playlist-modify-private user-library-read'
+PATH = os.getcwd() + '/data/user.txt'
 def get_token(user, scope):
     token = util.prompt_for_user_token(username = user, scope = scope, client_id='1da08e2fb3994edebbf758e0fa0ab23b',     client_secret='98fe97db700b44f4ad0743b945e3084b',redirect_uri='http://localhost:8888/callback/')
     return token
@@ -26,10 +28,10 @@ def training_songs(sp, Training_Playlist):
     return training_songs_id
 def get_user_songs(username):
     try:
-        print("Text File Found")
         #If CSV file with user information exist
-        with open('user.txt', 'r') as f:
+        with open(PATH, 'r') as f:
             #List containing all the track IDs of a user
+            print("Text File Found")
             user_songs_id = []
             txt_file = f.readlines()
             for track_id in txt_file:
@@ -55,7 +57,7 @@ def get_user_songs(username):
                 #adds the track ID to the list
                 user_songs_id.add(track['track']['id'])
                 #print(track['track']['name'])
-        with open('user.txt', 'w') as writeFile:
+        with open(PATH, 'w') as writeFile:
             #Write IDs into user.csv
             for track in user_songs_id:
                 track = track + "\n"

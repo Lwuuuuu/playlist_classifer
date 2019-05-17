@@ -7,6 +7,7 @@ import csv
 import fetch_songs as fs
 import svm_classifer as sc
 GLOBAL_SCOPE = 'user-library-modify playlist-modify-private user-library-read'
+PATH = os.getcwd() + '/data/user.txt'
 def add_tracks(sp, master_list, result = None):
     list_length = len(master_list)
     if list_length < 50:
@@ -37,10 +38,10 @@ def generate_playlist(user, split):
     token = fs.get_token(user, scope = GLOBAL_SCOPE)
     if token:
         sp = spotipy.Spotify(auth = token)
-        if os.path.exists("user.txt"):
+        if os.path.exists(PATH):
             #Re-load user.csv file with new user information
+            os.remove(PATH)
             print("Deleting previous user's CSV file")
-            os.remove("user.txt")
         #Playlist_dict will have either Workout/Study or Happy/Sad accompied with their list of track IDs
         playlist_dict = sc.predict(username = user, choice = split)
         allow_change = input("Type 0 if you want to add these playlist: ")
@@ -55,7 +56,7 @@ def generate_playlist(user, split):
     else:
         print("Invalid Username")
         return 0
-    os.remove('user.txt')
+    os.remove(PATH)
 def classify_Playlist(URL, username, choice = 0):
     token = get_token(user = username, scope = GLOBAL_SCOPE)
     if token:
@@ -69,7 +70,7 @@ def classify_Playlist(URL, username, choice = 0):
             if length == 0: break
             index += length
             #Writes the track IDs to user.csv
-            with open('user.txt', 'w') as f:
+            with open(PATH, 'w') as f:
                 for track_id in tracks:
                     track_id = track_id['track']['id']
                     track_id = track_id + "\n"
@@ -92,7 +93,7 @@ def classify_Playlist(URL, username, choice = 0):
                 if track in current_songs: track_list.remove(track)
             add_tracks(sp, track_list)
             print("Tracks have been succesfully added to your song library")
-        os.remove('user.txt')
+        os.remove(PATH)
     else:
         print("Invalid Username")
         return 0

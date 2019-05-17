@@ -10,6 +10,8 @@ import spotipy.util as util
 import pickle
 import os
 GLOBAL_SCOPE = 'user-library-modify playlist-modify-private user-library-read'
+MODELHS_PATH = os.getcwd() + '/data/modelHS.sav'
+MODELWS_PATH = os.getcwd() + '/data/model.sav'
 def accuracy(username, choice = 0):
     #Generate the training and testing data
     X, Y = generate_audio_features(username, split_choice = choice)
@@ -42,12 +44,12 @@ def predict(username, choice = 0):
         ft = ft[0:2] + ft[3:4] + ft[5:10]
         prediction_list.append(list(ft))
     #Load pre-trained model if avaliable
-    if os.path.exists('model.sav') and choice == 0:
+    if os.path.exists(MODELWS_PATH) and choice == 0:
         print("Loading into Pre-Trained Model..")
-        clf = pickle.load(open('model.sav', 'rb'))
-    elif os.path.exists('modelHS.sav') and choice == 1:
+        clf = pickle.load(open(MODELWS_PATH, 'rb'))
+    elif os.path.exists(MODELHS_PATH) and choice == 1:
         print("Loading into Pre-Trained Model..")
-        clf = pickle.load(open('modelHS.sav', 'rb'))
+        clf = pickle.load(open(MODELHS_PATH, 'rb'))
     else:
         #Creating SVM object
         clf = svm.SVC(kernel = 'linear', gamma = .001, decision_function_shape = 'ovr', C = 10)
@@ -58,7 +60,7 @@ def predict(username, choice = 0):
         clf.fit(X, Y)
         #Saving the model
         print("Writing Model to file...")
-        pickle.dump(clf, open('model.sav', 'w')) if choice == 0 else pickle.dump(clf,open('modelHS.sav', 'wb'))
+        pickle.dump(clf, open(MODELWS_PATH, 'wb')) if choice == 0 else pickle.dump(clf,open(MODELHS_PATH, 'wb'))
     type1 = type2 = 0
     if choice == 0:
         mood_dict = {'Generated-Workout' : [],

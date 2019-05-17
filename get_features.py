@@ -1,12 +1,18 @@
 import sys
 import spotipy
 import spotipy.util as util
+import os
 import fetch_songs as fs
 import random
 import numpy as np
 import csv
 from sklearn.model_selection import train_test_split
-
+STUDY_PATH = os.getcwd() + '/data/Study.txt'
+WORKOUT_PATH = os.getcwd() + '/data/Workout.txt'
+HAPPY_PATH = os.getcwd() + '/data/Happy.txt'
+SAD_PATH = os.getcwd() + '/data/Sad.txt'
+HAP_SAD_FEATURES = os.getcwd() + '/data/features_happy_sad.csv'
+WORK_STUDY_FEATURES = os.getcwd() + '/data/features_work_study.csv'
 class features():
     def __init__(self, sp, id_no, classifcation = None):
         self.sp = sp
@@ -44,8 +50,8 @@ class features():
         return self.danceability, self.energy, self.key, self.loudness, self.mode, self.speechiness, self.acousticness, self.instrumentalness, self.valence, self.tempo, self.time_signature, self.classifcation
 
 def count_rows(split_choice = 0):
-    if split_choice == 0: f = 'features_work_study.csv'
-    elif split_choice == 1: f = 'features_happy_sad.csv'
+    if split_choice == 0: f = WORK_STUDY_FEATURES
+    elif split_choice == 1: f = HAP_SAD_FEATURES
     #Count the number of tracks recorded in the features.CSV
     with open(f, 'r') as readFile:
         row_count = sum(1 for row in readFile)
@@ -54,8 +60,8 @@ def count_rows(split_choice = 0):
 def retrieve_Playlist(split_choice = 0):
      All_Playlist = []
      #All mood playlist
-     if split_choice ==  0: txt_files = ['Workout.txt', 'Study.txt']
-     elif split_choice ==  1: txt_files = ['Happy.txt', 'Sad.txt']
+     if split_choice ==  0: txt_files = [WORKOUT_PATH, STUDY_PATH]
+     elif split_choice ==  1: txt_files = [HAPPY_PATH, SAD_PATH]
      for fi in txt_files:
          with open(fi, 'r') as f:
             temp = []
@@ -69,8 +75,8 @@ def retrieve_Playlist(split_choice = 0):
 def generate_audio_features(username, split_choice = 0, test_size = .1):
     try:
         #If the audio features are already loaded into the CSV file
-        if split_choice == 0: f = 'features_work_study.csv'
-        elif split_choice == 1: f = 'features_happy_sad.csv'
+        if split_choice == 0: f = WORK_STUDY_FEATURES
+        elif split_choice == 1: f = HAPPY_SAD_FEATURES
         with open(f, 'r') as readFile:
                 index = 0
                 print("Reading from CSV file...")
@@ -117,8 +123,8 @@ def generate_audio_features(username, split_choice = 0, test_size = .1):
                         All_Tracks[j].remove(dupes)
             mood_no = 0
             np_index = 0
-            if split_choice == 0: csv_file = 'features_work_study.csv'
-            elif split_choice == 1: csv_file = 'features_happy_sad.csv'
+            if split_choice == 0: csv_file = WORK_STUDY_FEATURES
+            elif split_choice == 1: csv_file = HAP_SAD_FEATURES
             #Open up the features.CSV so that we can write into it
             f = open(csv_file, 'a')
             writer = csv.writer(f)
