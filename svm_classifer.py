@@ -12,6 +12,7 @@ import os
 GLOBAL_SCOPE = 'user-library-modify playlist-modify-private user-library-read'
 MODELHS_PATH = os.getcwd() + '/data/modelHS.sav'
 MODELWS_PATH = os.getcwd() + '/data/model.sav'
+
 def accuracy(username, choice = 0):
     #Generate the training and testing data
     X, Y = generate_audio_features(username, split_choice = choice)
@@ -51,17 +52,16 @@ def predict(username, choice = 0):
         print("Loading into Pre-Trained Model..")
         clf = pickle.load(open(MODELHS_PATH, 'rb'))
     else:
-        #Creating SVM object
         clf = svm.SVC(kernel = 'linear', gamma = .001, decision_function_shape = 'ovr', C = 10)
         #Load in the training data
         X, Y = generate_audio_features(username, split_choice = choice)
-        #Train Model
         print("Training the Model.")
+        #Train Model
         clf.fit(X, Y)
-        #Saving the model
         print("Writing Model to file...")
         pickle.dump(clf, open(MODELWS_PATH, 'wb')) if choice == 0 else pickle.dump(clf,open(MODELHS_PATH, 'wb'))
     type1 = type2 = 0
+    tmp = []
     if choice == 0:
         mood_dict = {'Generated-Workout' : [],
                     'Generated-Study' : []
@@ -71,13 +71,11 @@ def predict(username, choice = 0):
                     'Generated-Sad' : []
                     }
     for track_features, track_id in zip(prediction_list, id_list):
-        #Store the audio_features into an np array, since that is the format needed to past into predict
         user_test = np.array(track_features, dtype = np.float32)
-        #Reshaping
         user_test = user_test.reshape(1, -1)
         #Will Predict which playlsit this track belongs to
-        #Workout = 0, Study = 1, Happy = 0, Sad = 1
         predicted_mood = clf.predict(user_test)
+        #Workout = 0, Study = 1, Happy = 0, Sad = 1
         if choice == 0:
             if predicted_mood == 0:
                 mood = 'Workout'
@@ -98,9 +96,6 @@ def predict(username, choice = 0):
                 type2 += 1
         trackName = sp.track(track_id)['name']
         print("{0} belongs in the {1} playlist.".format(trackName, mood))
-    print("Type1 - {0},  Type2 - {1}".format(type1, type2))
+    [tmp.append(x) for x in mood_dict]
+    print("{0} - {1},  {2} - {3}".format(tmp[0],type1,tmp[1], type2))
     return mood_dict
-if __name__ == '__main__':
-    username = 'cv2f8pc6v4yqhx9qsgiiynji5'
-    split = int(input("0 for Work&Study, 1 for Happy&Sad: "))
-    #accuracy(choice = split, username = 'cv2f8pc6v4yqhx9qsgiiynji5')

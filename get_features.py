@@ -31,8 +31,6 @@ class features():
         self.classifcation = classifcation
     def audio_features(self):
         features = self.sp.audio_features(str(self.id))[0]
-        if features is None:
-            return -1
         self.danceability = features['danceability']
         self.energy = features['energy']
         self.key = features['key']
@@ -44,7 +42,6 @@ class features():
         self.valence = features['valence']
         self.tempo = features['tempo']
         self.time_signature = features['time_signature']
-        return 0
     def return_features(self):
         #Returns 12 Things
         return self.danceability, self.energy, self.key, self.loudness, self.mode, self.speechiness, self.acousticness, self.instrumentalness, self.valence, self.tempo, self.time_signature, self.classifcation
@@ -135,10 +132,9 @@ def generate_audio_features(username, split_choice = 0, test_size = .1):
                     #Create object that holds all audio features
                     ft = features(sp, id_no, mood_classifcation)
                     #Loads in audio features into object
-                    status = ft.audio_features()
+                    ft.audio_features()
                     #Returns a list containing all the audio features
-                    if status == 0:
-                        feature = ft.return_features()
+                    feature = ft.return_features()
                     #Add that audio feature into the np array
                     writer.writerow(feature)
                     print("Track", np_index)

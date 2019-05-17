@@ -22,9 +22,8 @@ def training_songs(sp, Training_Playlist):
             if length == 0:
                 break
             index += length
-            for track_id in tracks:
-                #Adds the tracks ID to the set
-                training_songs_id.add(track_id['track']['id'])
+            #Adds the tracks ID to the set
+            [training_songs_id.add(track_id['track']['id']) for track_id in tracks]
     return training_songs_id
 def get_user_songs(username):
     try:
@@ -34,8 +33,7 @@ def get_user_songs(username):
             print("Text File Found")
             user_songs_id = []
             txt_file = f.readlines()
-            for track_id in txt_file:
-                user_songs_id.append(track_id.rstrip("\n"))
+            [user_songs_id.append(track_id.rstrip("\n")) for track_id in txt_file]
     except:
         #If no user CSV File exist
         print("Loading in tracks into Text File")
@@ -49,14 +47,12 @@ def get_user_songs(username):
             user_songs = results['items']
             length = len(user_songs)
             #If all tracks from users saved tracks have been recorded
-            if length == 0:
-                break
+            if length == 0: break
             #Increase offset for next iteration
             index += length
             for track in user_songs:
                 #adds the track ID to the list
-                user_songs_id.add(track['track']['id'])
-                #print(track['track']['name'])
+            [user_songs_id.add(track['track']['id']) for track in user_songs]
         with open(PATH, 'w') as writeFile:
             #Write IDs into user.csv
             for track in user_songs_id:
