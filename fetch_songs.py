@@ -2,11 +2,10 @@ import sys
 import spotipy
 import spotipy.util as util
 import csv
+GLOBAL_SCOPE = 'user-library-modify playlist-modify-private user-library-read'
 def get_token(user, scope):
-    #token = util.prompt_for_user_token(user, scope)
     token = util.prompt_for_user_token(username = user, scope = scope, client_id='1da08e2fb3994edebbf758e0fa0ab23b',     client_secret='98fe97db700b44f4ad0743b945e3084b',redirect_uri='http://localhost:8888/callback/')
     return token
-
 
 def training_songs(sp, Training_Playlist):
     training_songs_id = set()
@@ -27,18 +26,18 @@ def training_songs(sp, Training_Playlist):
     return training_songs_id
 def get_user_songs(username):
     try:
+        print("Text File Found")
         #If CSV file with user information exist
-        with open('user.csv', 'r') as readFile:
+        with open('user.txt', 'r') as f:
             #List containing all the track IDs of a user
             user_songs_id = []
-            reader = csv.reader(readFile)
-            csv_file = list(reader)
-            for track_id in csv_file:
-                user_songs_id.append(track_id)
+            txt_file = f.readlines()
+            for track_id in txt_file:
+                user_songs_id.append(track_id.rstrip("\n"))
     except:
         #If no user CSV File exist
-        print("Loading in user's tracks into CSV File")
-        token = get_token(user = username, scope = 'user-library-read')
+        print("Loading in tracks into Text File")
+        token = get_token(user = username, scope = GLOBAL_SCOPE)
         sp = spotipy.Spotify(auth = token)
         user_songs_id = set()
         index = 0
@@ -56,10 +55,9 @@ def get_user_songs(username):
                 #adds the track ID to the list
                 user_songs_id.add(track['track']['id'])
                 #print(track['track']['name'])
-        with open('user.csv', 'a') as writeFile:
+        with open('user.txt', 'w') as writeFile:
             #Write IDs into user.csv
-            writer = csv.writer(writeFile)
             for track in user_songs_id:
-                writer.writerow(track)
-
+                track = track + "\n"
+                writeFile.write(track)
     return user_songs_id

@@ -9,15 +9,12 @@ import spotipy
 import spotipy.util as util
 import pickle
 import os
+GLOBAL_SCOPE = 'user-library-modify playlist-modify-private user-library-read'
 def accuracy(username, choice = 0):
     #Generate the training and testing data
     X, Y = generate_audio_features(username, split_choice = choice)
     #Creating SVM, C = 10, gamma = .001 optimal from grid search
     clf = svm.SVC(kernel = 'linear', gamma = .001, decision_function_shape = 'ovr', C = 10)
-    #x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size = .2)
-    #clf.fit(x_train, y_train)
-    #accuracy = clf.score(x_test, y_test)
-    #print("Accuracy", accuracy)
 
     #Using cross_val_score to score the model
     scores = cross_val_score(clf, X, Y, cv = 10)
@@ -25,20 +22,19 @@ def accuracy(username, choice = 0):
 
 def predict(username, choice = 0):
     #Loads in the current users track list
-    user_list = list(fs.get_user_songs(username))
+    user_list = fs.get_user_songs(username)
     #Prediction List will hold the audio features of the user's tracks
     prediction_list = []
     #ID List is the list of the IDs of the user's tracks
     id_list = []
-    token = fs.get_token(user = username, scope = 'user-library-modify playlist-modify-private user-library-read')
+    token = fs.get_token(user = username, scope = GLOBAL_SCOPE)
     sp = spotipy.Spotify(auth = token)
-    print("Generating User's tracks audio features...")
+    print("Generating tracks audio features...")
     for track in user_list:
         #In the CSV file, the track ID is stored as a list where each element is an indivdiual char.
-        result = str("".join(track))
-        id_list.append(result)
+        id_list.append(track)
         #Loads the audio features for a specific Track ID
-        feature = gf.features(sp, result)
+        feature = gf.features(sp, track)
         feature.audio_features()
         #Do not include the last element of the list because that is the label, which is None as it is unlabled
         ft = feature.return_features()[:-1]
@@ -62,7 +58,7 @@ def predict(username, choice = 0):
         clf.fit(X, Y)
         #Saving the model
         print("Writing Model to file...")
-        pickle.dump(clf, open('model.sav', 'wb')) if choice == 0 else pickle.dump(clf,open('modelHS.sav', 'wb'))
+        pickle.dump(clf, open('model.sav', 'w')) if choice == 0 else pickle.dump(clf,open('modelHS.sav', 'wb'))
     type1 = type2 = 0
     if choice == 0:
         mood_dict = {'Generated-Workout' : [],
@@ -105,13 +101,4 @@ def predict(username, choice = 0):
 if __name__ == '__main__':
     username = 'cv2f8pc6v4yqhx9qsgiiynji5'
     split = int(input("0 for Work&Study, 1 for Happy&Sad: "))
-    happy_sad_dict = predict('cv2f8pc6v4yqhx9qsgiiynji5',split)
-    sad_list = happy_sad_dict['Generated-Sad']
-    Add = input("Type 1 if you want to add these songs to your song library: ")
-    if Add == '1':
-        token = fs.get_token(user = username, scope = 'user-library-modify playlist-modify-private user-library-read')
-        sp = spotipy.Spotify(auth = token)
-        sp.current_user_saved_tracks_add(sad_list)
-        print("Tracks have been succesfully added to your song library.")
-    os.remove('user.csv')
     #accuracy(choice = split, username = 'cv2f8pc6v4yqhx9qsgiiynji5')

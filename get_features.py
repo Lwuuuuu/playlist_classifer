@@ -25,6 +25,8 @@ class features():
         self.classifcation = classifcation
     def audio_features(self):
         features = self.sp.audio_features(str(self.id))[0]
+        if features is None:
+            return -1
         self.danceability = features['danceability']
         self.energy = features['energy']
         self.key = features['key']
@@ -36,6 +38,7 @@ class features():
         self.valence = features['valence']
         self.tempo = features['tempo']
         self.time_signature = features['time_signature']
+        return 0
     def return_features(self):
         #Returns 12 Things
         return self.danceability, self.energy, self.key, self.loudness, self.mode, self.speechiness, self.acousticness, self.instrumentalness, self.valence, self.tempo, self.time_signature, self.classifcation
@@ -57,9 +60,8 @@ def retrieve_Playlist(split_choice = 0):
          with open(fi, 'r') as f:
             temp = []
             reader = f.readlines()
-            for line in reader:
-                #Reading in the URLs for each mood file into temp
-                 temp.append(line)
+            #Reading in the URLs for each mood file into temp
+            [temp.append(line) for line in reader]
             #All_Playlist is a list containing list of URLs for each mood playlist
             All_Playlist.append(temp)
      return All_Playlist
@@ -71,7 +73,7 @@ def generate_audio_features(username, split_choice = 0, test_size = .1):
         elif split_choice == 1: f = 'features_happy_sad.csv'
         with open(f, 'r') as readFile:
                 index = 0
-                print("Reading from features.CSV file...")
+                print("Reading from CSV file...")
                 row_count = count_rows(split_choice)
                 #Init the np array
                 features_list = np.zeros([row_count, 9], dtype = np.float32)
@@ -89,7 +91,7 @@ def generate_audio_features(username, split_choice = 0, test_size = .1):
                 return features_list[:, :8], features_list[:, -1]
     except:
         #If no audio features have been loaded into the CSV file
-        print("No CSV Found, Creating features.CSV...")
+        print("No CSV Found, Creating a CSV...")
         token = fs.get_token(user = "", scope = 'user-library-read')
         if token:
             sp = spotipy.Spotify(auth = token)
@@ -127,9 +129,10 @@ def generate_audio_features(username, split_choice = 0, test_size = .1):
                     #Create object that holds all audio features
                     ft = features(sp, id_no, mood_classifcation)
                     #Loads in audio features into object
-                    ft.audio_features()
+                    status = ft.audio_features()
                     #Returns a list containing all the audio features
-                    feature = ft.return_features()
+                    if status == 0:
+                        feature = ft.return_features()
                     #Add that audio feature into the np array
                     writer.writerow(feature)
                     print("Track", np_index)
