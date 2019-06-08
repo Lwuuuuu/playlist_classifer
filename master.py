@@ -34,7 +34,7 @@ def add_tracks(sp, master_list, result = None):
             start += 50
     print("Succesfully added the playlist to your account.")
 
-def generate_playlist(user, split):
+def generate_playlist(user):
     token = fs.get_token(user, scope = GLOBAL_SCOPE)
     if token:
         sp = spotipy.Spotify(auth = token)
@@ -43,7 +43,7 @@ def generate_playlist(user, split):
             os.remove(PATH)
             print("Deleting previous user's CSV file")
         #Playlist_dict will have either Workout/Study or Happy/Sad accompied with their list of track IDs
-        playlist_dict = sc.predict(username = user, choice = split)
+        playlist_dict = sc.predict(username = user)
         allow_change = input("Type 0 if you want to add these playlist: ")
         if allow_change == '0':
             for playlist in playlist_dict:
@@ -64,7 +64,10 @@ def classify_Playlist(URL, username, choice = 0):
         index = 0
         while 1:
             #Gets the tracks for the specified URL
-            results = sp.user_playlist_tracks(user = username, playlist_id = URL, limit = 100, offset = index)
+            try:
+                results = sp.user_playlist_tracks(username, URL, None, 100, index, None)
+            except:
+                results = sp.album_tracks(URL, 50, index)
             tracks = results['items']
             length = len(tracks)
             if length == 0: break
@@ -75,8 +78,9 @@ def classify_Playlist(URL, username, choice = 0):
                     track_id = track_id['track']['id']
                     track_id = track_id + "\n"
                     f.write(track_id)
+        print("Finished Reading Playlist")
         #This will classify each track into one of the two groups stored in a dict
-        mood_dict = sc.predict(username, split)
+        mood_dict = sc.predict(username, sp)
         moods = []
         #Gets a list of the dict key values
         [moods.append(x) for x in mood_dict]
@@ -105,11 +109,10 @@ if __name__ == '__main__':
     #user = "cv2f8pc6v4yqhx9qsgiiynji5"
     username = input("Enter your username: ")
     Input = input("Type 0 to Classify a Playlist, Type 1 to Classify your Songs: ")
-    split = int(input("0 for Work&Study, 1 for Happy&Sad: "))
     if Input == '0':
         #Playlist Classifcation
         URL = input("Paste the Playlist URL: ")
-        classify_Playlist(URL, username, split)
+        classify_Playlist(URL, username)
     if Input == '1':
         #Classify user's song library
-        generate_playlist(username, split)
+        generate_playlist(username)

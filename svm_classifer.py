@@ -13,9 +13,9 @@ GLOBAL_SCOPE = 'user-library-modify playlist-modify-private user-library-read'
 MODELHS_PATH = os.getcwd() + '/data/modelHS.sav'
 MODELWS_PATH = os.getcwd() + '/data/model.sav'
 
-def accuracy(username, choice = 0):
+def accuracy(username):
     #Generate the training and testing data
-    X, Y = generate_audio_features(username, split_choice = choice)
+    X, Y = generate_audio_features(username)
     #Creating SVM, C = 10, gamma = .001 optimal from grid search
     clf = svm.SVC(kernel = 'linear', gamma = .001, decision_function_shape = 'ovr', C = 10)
 
@@ -23,9 +23,9 @@ def accuracy(username, choice = 0):
     scores = cross_val_score(clf, X, Y, cv = 10)
     print("Accuracy: %f (+/- %f)" % (scores.mean(), scores.std() * 2))
 
-def predict(username, choice = 0):
+def predict(username, sp):
     #Loads in the current users track list
-    user_list = fs.get_user_songs(username)
+    user_list = fs.get_user_songs(username, sp)
     #Prediction List will hold the audio features of the user's tracks
     prediction_list = []
     #ID List is the list of the IDs of the user's tracks
@@ -45,10 +45,7 @@ def predict(username, choice = 0):
         ft = ft[0:2] + ft[3:4] + ft[5:10]
         prediction_list.append(list(ft))
     #Load pre-trained model if avaliable
-    if os.path.exists(MODELWS_PATH) and choice == 0:
-        print("Loading into Pre-Trained Model..")
-        clf = pickle.load(open(MODELWS_PATH, 'rb'))
-    elif os.path.exists(MODELHS_PATH) and choice == 1:
+    if os.path.exists(MODELHS_PATH):
         print("Loading into Pre-Trained Model..")
         clf = pickle.load(open(MODELHS_PATH, 'rb'))
     else:
@@ -59,41 +56,26 @@ def predict(username, choice = 0):
         #Train Model
         clf.fit(X, Y)
         print("Writing Model to file...")
-        pickle.dump(clf, open(MODELWS_PATH, 'wb')) if choice == 0 else pickle.dump(clf,open(MODELHS_PATH, 'wb'))
+        pickle.dump(clf,open(MODELHS_PATH, 'wb'))
     type1 = type2 = 0
     tmp = []
-    if choice == 0:
-        mood_dict = {'Generated-Workout' : [],
-                    'Generated-Study' : []
-                    }
-    if choice == 1:
-        mood_dict = {'Generated-Happy' : [],
-                    'Generated-Sad' : []
-                    }
+    mood_dict = {'Generated-Happy' : [],
+                'Generated-Sad' : []
+                }
     for track_features, track_id in zip(prediction_list, id_list):
         user_test = np.array(track_features, dtype = np.float32)
         user_test = user_test.reshape(1, -1)
         #Will Predict which playlsit this track belongs to
         predicted_mood = clf.predict(user_test)
         #Workout = 0, Study = 1, Happy = 0, Sad = 1
-        if choice == 0:
-            if predicted_mood == 0:
-                mood = 'Workout'
-                mood_dict['Generated-Workout'].append(track_id)
-                type1 += 1
-            if predicted_mood  == 1:
-                mood = "Study"
-                mood_dict['Generated-Study'].append(track_id)
-                type2 += 1
-        if choice == 1:
-            if predicted_mood == 0:
-                mood = 'Happy'
-                mood_dict['Generated-Happy'].append(track_id)
-                type1 += 1
-            if predicted_mood == 1:
-                mood = 'Sad'
-                mood_dict['Generated-Sad'].append(track_id)
-                type2 += 1
+        if predicted_mood == 0:
+            mood = 'Happy'
+            mood_dict['Generated-Happy'].append(track_id)
+            type1 += 1
+        if predicted_mood == 1:
+            mood = 'Sad'
+            mood_dict['Generated-Sad'].append(track_id)
+            type2 += 1
         trackName = sp.track(track_id)['name']
         print("{0} belongs in the {1} playlist.".format(trackName, mood))
     [tmp.append(x) for x in mood_dict]
