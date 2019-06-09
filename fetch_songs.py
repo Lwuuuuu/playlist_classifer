@@ -25,7 +25,7 @@ def training_songs(sp, Training_Playlist):
             #Adds the tracks ID to the set
             [training_songs_id.add(track_id['track']['id']) for track_id in tracks]
     return training_songs_id
-def get_user_songs(username):
+def get_user_songs(username, sp):
     try:
         #If CSV file with user information exist
         with open(PATH, 'r') as f:
