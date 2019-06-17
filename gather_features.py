@@ -7,20 +7,26 @@ import random
 import numpy as np
 import csv
 import time
+import json 
+import math
+import random
 from tqdm import tqdm
 import pickle
 from collections import defaultdict, Counter
+from classifcation import mood_predictor, recommender_predictor, drop
+#import classifcation  as cn 
 #Happy is 0 and Sad is 1
-GLOBAL_SCOPE = 'user-library-modify playlist-modify-private user-library-read'
+GLOBAL_SCOPE = 'user-library-modify playlist-modify-private user-library-read playlist-read-private'
 feature_types = ['danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness',
 'valence', 'tempo']
 HAPPY_PATH = os.getcwd() + '/data/Happy.txt'
 SAD_PATH = os.getcwd() + '/data/Sad.txt'
 user_file = os.getcwd() + '/data/user.csv'
 HAP_SAD_FEATURES = os.getcwd() + '/data/features_happy_sad.csv'
-
+GENRE_DICT = os.getcwd() + '/data/genre_dict.json'
 class Spotify():
-    def __init__(self, username):
+    def __init__(self, username, max_tracks):
+        self.max_tracks = max_tracks
         self.username = username
         self.token = self.get_token(GLOBAL_SCOPE)
         self.sp = spotipy.Spotify(auth = self.token)
@@ -30,6 +36,8 @@ class Spotify():
         self.training_audio_features = None
         self.artist_dict = defaultdict(int)
         self.genre_dict = defaultdict(int)
+        self.user_track_uris = set()
+        self.user_playlist_track_uri = set()
     def get_sp(self):
         return self.sp
 
@@ -51,7 +59,9 @@ class Spotify():
             if length == 0: break
             index += length
             #adds the track ID to the set
-            [self.user_tracks_id.append(track['track']['id']) for track in user_songs]
+            for track in user_songs:
+                self.user_tracks_id.append(track['track']['id'])
+                self.user_track_uris.add(track['track']['uri'])
 
     def load_training_tracks(self, Training_Playlist):
         mood_playlist = set()
@@ -200,29 +210,118 @@ class Spotify():
                 iter = id_length - start
         return playlist, ids
     def track_genres(self):
+        print("Parsing User Tracks")
         self.load_user_tracks()
-        start = 0 
-        user_length = len(self.user_tracks_id)
-        index = 50 
-        pbar = tqdm(total = user_length, initial = start)
-        while start < user_length:
-            results = self.sp.tracks(self.user_tracks_id[start:start+index])
-            for i in range(len(results)):
-                artists = results['tracks'][i]['album']['artists']
-                for j in range(len(artists)):
-                    self.artist_dict[artists[j]['id']] += 1
-            pbar.update(1)       
-            start += len(results)
-            if user_length - start < 50:
-                index = user_length - start
-        pbar.close()
-        
-        for artist in tqdm(self.artist_dict):
-            genres = self.sp.artist(artist)['genres']
-            for i in range(len(genres)):
-                self.genre_dict[genres[i]] += self.artist_dict[artist]
-        for x, y in Counter(self.genre_dict).most_common(): 
-            print(x, y)
+        print("Parsing User Playlist Tracks")
+        self.user_playlist_tracks()
+        if os.path.exists(GENRE_DICT) == False:
+            start = 0 
+            user_length = len(self.user_tracks_id)
+            index = 50 
+            pbar = tqdm(total = user_length, initial = start)
+            while start < user_length:
+                results = self.sp.tracks(self.user_tracks_id[start:start+index])
+                for i in range(len(results)):
+                    artists = results['tracks'][i]['album']['artists']
+                    for j in range(len(artists)):
+                        self.artist_dict[artists[j]['id']] += 1     
+                start += len(results)
+                pbar.update(start)  
+                if user_length - start < 50:
+                    index = user_length - start
+            pbar.close()
+            
+            for artist in tqdm(self.artist_dict):
+                genres = self.sp.artist(artist)['genres']
+                for i in range(len(genres)):
+                    self.genre_dict[genres[i]] += self.artist_dict[artist]
+            self.genre_dict = Counter(self.genre_dict).most_common(5) 
+            with open(GENRE_DICT, 'w') as fp:
+                json.dump(self.genre_dict, fp)
+        else:
+            with open(GENRE_DICT, 'r') as fp:
+                self.genre_dict = json.load(fp)
+        user_genre_total = sum(x[1] for x in self.genre_dict)
+        recHappy = []
+        recSad = []
+        current_no = 0 
+        pbar = tqdm(total = self.max_tracks, initial = 0)
+        print("\nParsing Genre Tracks...")
+        parsed_uris = set()
+        for x in self.genre_dict:
+            search_string = 'genre:"{0}"'.format(x[0])
+            index = 0  
+            genre_max = math.ceil(x[1]/user_genre_total * self.max_tracks)
+            notEnough = True 
+            happy_buffer = []
+            sad_buffer = []
+            genre_id_list = []
+            print("\nGenre {} MAX - {} ".format(x[0], genre_max))
+            while notEnough:
+                results = self.sp.search(q=search_string, limit = 10, offset=index, type = 'track')['tracks']['items']
+                index += len(results)
+                for i in range(len(results)):
+                    genre_id_list.append(results[i]['id']) 
+                if len(genre_id_list) % 500 == 0:
+                    ret = []
+                    for i in range(10): 
+                        genre_ft = self.sp.audio_features(genre_id_list[i*50:(i+1)*50])
+                        for j in range(len(genre_ft)):
+                            ret.append(genre_ft[j])
+                    random.shuffle(ret)
+                    genre_audio_features = np.zeros([len(genre_id_list), len(feature_types)])
+                    for i in range(len(ret)):
+                        genre_audio_features[i] = [ret[i][ft] for ft in feature_types]
+                    recTracks, _ = recommender_predictor(genre_id_list, genre_audio_features)
+                    genre_id_list = []
+                    ids = [] 
+                    recfeatures = np.zeros([len(recTracks), len(feature_types)])
+                    for i in range(len(recTracks)):
+                        ids.append(recTracks[i][0])
+                        recfeatures[i] = recTracks[i][1]
+                    recfeatures = drop(recfeatures, 'loudness')
+                    recfeatures = drop(recfeatures, 'speechiness')
+                    if len(ids) > 0: 
+                        genre_recHappy, genre_recSad = mood_predictor(ids, recfeatures)
+                    for track in genre_recHappy:
+                        uri = self.sp.track(track)['uri']
+                        if uri not in list(self.user_track_uris | self.user_playlist_track_uri | parsed_uris):
+                            happy_buffer.append(track) 
+                            parsed_uris.add(uri)
+                    for track in genre_recSad:
+                        uri = self.sp.track(track)['uri']
+                        if uri not in list(self.user_track_uris | self.user_playlist_track_uri | parsed_uris):
+                            sad_buffer.append(track)
+                            parsed_uris.add(uri) 
+                    print("Found {} Happy Tracks and {} Sad Tracks in {} Genre".format(len(happy_buffer), len(sad_buffer), x[0]))
+                    if len(happy_buffer) and len(sad_buffer) >= genre_max: 
+                        pbar.update(genre_max)
+                        for i in range(genre_max):
+                            recSad.append(sad_buffer[i])
+                            recHappy.append(happy_buffer[i])
+                        notEnough = False
+        return recHappy, recSad
+    def user_playlist_tracks(self): 
+        results = self.sp.current_user_playlists()['items']
+        for i in range(len(results)):
+            index = 0 
+            while 1:
+                tracks = self.sp.user_playlist_tracks(user = self.username, playlist_id = results[i]['id'], offset = index)['items']
+                index += len(tracks)
+                if len(tracks) == 0:
+                    break
+                for j in range(len(tracks)):
+                    self.user_playlist_track_uri.add(tracks[j]['track']['uri'])
+        return self.user_playlist_track_uri
+    def create_playlist(self, IDs, playlistName):
+        playlistID = self.sp.user_playlist_create(user = self.username, name = playlistName, public = False)
+        self.sp.user_playlist_add_tracks(user = self.username, playlist_id = playlistID['id'], tracks = IDs)
+        print("\nSuccessfully Created Playlist")
+
 if __name__ == '__main__':
-    test = Spotify('cv2f8pc6v4yqhx9qsgiiynji5')
-    test.track_genres()
+    max_tracks = int(input("Enter how many tracks you want in your playlists: "))
+    test = Spotify('cv2f8pc6v4yqhx9qsgiiynji5', max_tracks)
+    test.user_playlist_tracks()
+    recHappy, recSad = test.track_genres()
+    test.create_playlist(recHappy, 'Recommended Happy')
+    test.create_playlist(recSad, 'Recommended Sad')

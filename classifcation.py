@@ -1,6 +1,5 @@
 from sklearn import svm, neighbors, linear_model, preprocessing
 from sklearn.model_selection import cross_val_score, train_test_split
-from gather_features import Spotify
 import numpy as np
 import random
 import os 
@@ -160,4 +159,6 @@ def master(URL):
     print("Sad Tracks")
     for track in recSad:
         print(sp.track(track)['name'])
-master('https://open.spotify.com/playlist/37i9dQZF1DX5KpP2LN299J')
+if __name__ == '__main__':
+    from gather_features import Spotify
+    master('https://open.spotify.com/playlist/37i9dQZF1DX5KpP2LN299J')
